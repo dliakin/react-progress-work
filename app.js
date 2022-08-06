@@ -3,6 +3,8 @@ const content = document.querySelector("#content");
 const backdrop = document.querySelector("#modal-backdrop");
 const progress = document.querySelector("#progress");
 
+const APP_TITLE = document.title;
+
 const technologies = [
   {
     title: "HTML",
@@ -31,14 +33,45 @@ const technologies = [
 ];
 
 content.addEventListener("click", openCard);
-backdrop.addEventListener("click", closeCard);
+backdrop.addEventListener("click", closeModal);
+modal.addEventListener("change", toggleTech);
 
-function openCard() {
+function openCard(event) {
+  const data = event.target.dataset;
+  const tech = technologies.find((t) => t.type === data.cardtype);
+  if (!tech) return;
+  openModal(toModal(tech), tech.title);
+}
+
+function closeModal() {
+  document.title = APP_TITLE;
+  modal.classList.remove("open");
+}
+
+function openModal(html, title = APP_TITLE) {
+  document.title = `${title} | ${APP_TITLE}`;
+  modal.innerHTML = html;
   modal.classList.add("open");
 }
 
-function closeCard() {
-  modal.classList.remove("open");
+function toModal(tech) {
+  const checked = tech.done ? "checked" : "";
+  return ` 
+    <h2>${tech.title}</h2>
+    <p>${tech.description}</p>
+    <hr />
+    <div>
+        <input type="checkbox" id="done" ${checked} data-type="${tech.type}"/>
+        <label for="done">Выучил</label>
+    </div>
+  `;
+}
+
+function toggleTech(event) {
+  const type = event.target.dataset.type;
+  const tech = technologies.find((t) => t.type === type);
+  tech.done = event.target.checked;
+  init();
 }
 
 function renderCards() {
@@ -50,7 +83,7 @@ function renderCards() {
 }
 
 function toCard(tech) {
-  return `<div class="card ${tech.done ? "done" : ""}"><h3>${tech.title}</h3></div>`;
+  return `<div class="card ${tech.done ? "done" : ""}" data-cardType="${tech.type}"><h3 data-cardType="${tech.type}">${tech.title}</h3></div>`;
 }
 
 function renderProgress() {
