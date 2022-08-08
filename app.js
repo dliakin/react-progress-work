@@ -2,39 +2,17 @@ const modal = document.querySelector("#modal");
 const content = document.querySelector("#content");
 const backdrop = document.querySelector("#modal-backdrop");
 const progress = document.querySelector("#progress");
+const form = document.querySelector("#form");
 
 const APP_TITLE = document.title;
+const LS_KEY = "MY_TECTS";
 
-const technologies = [
-  {
-    title: "HTML",
-    description: "HTML TEXT",
-    type: "html",
-    done: true,
-  },
-  {
-    title: "CSS",
-    description: "CSS TEXT",
-    type: "css",
-    done: false,
-  },
-  {
-    title: "JavaScript",
-    description: "JavaScript TEXT",
-    type: "javascript",
-    done: false,
-  },
-  {
-    title: "REACT",
-    description: "REACT TEXT",
-    type: "react",
-    done: false,
-  },
-];
+const technologies = getState();
 
 content.addEventListener("click", openCard);
 backdrop.addEventListener("click", closeModal);
 modal.addEventListener("change", toggleTech);
+form.addEventListener("submit", createTech);
 
 function openCard(event) {
   const data = event.target.dataset;
@@ -71,6 +49,7 @@ function toggleTech(event) {
   const type = event.target.dataset.type;
   const tech = technologies.find((t) => t.type === type);
   tech.done = event.target.checked;
+  saveState();
   init();
 }
 
@@ -110,6 +89,43 @@ function computeProgressPersent() {
 function init() {
   renderCards();
   renderProgress();
+}
+
+function isInvalid(title, description) {
+  return !title.value || !description.value;
+}
+
+function createTech(event) {
+  event.preventDefault();
+  const { title, description } = event.target;
+  if (isInvalid(title, description)) {
+    if (!title.value) title.classList.add("invalid");
+    if (!description.value) description.classList.add("invalid");
+    setTimeout(() => {
+      title.classList.remove("invalid");
+    }, 2000);
+    return;
+  }
+  const newTech = {
+    title: title.value,
+    description: description.value,
+    done: false,
+    type: title.value.toLowerCase(),
+  };
+
+  technologies.push(newTech);
+  title.value = description.value = "";
+  saveState();
+  init();
+}
+
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(technologies));
+}
+
+function getState() {
+  const raw = localStorage.getItem(LS_KEY);
+  return raw ? JSON.parse(raw) : [];
 }
 
 init();
